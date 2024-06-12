@@ -15,7 +15,7 @@ library(shinyWidgets)  # Add shinyWidgets library for boxPlus
 data_adopsi <- read.csv("dataSEC - new.csv")
 colnames(data_adopsi)[colnames(data_adopsi) == 'ID'] <- 'ADM2_PCODE'
 
-Kabupaten.shp <- read_sf(dsn = ".", layer = "idn_admbnda_adm2_bps_20200401")
+Kabupaten.shp <- read_sf(dsn = "/File SHP Indonesia/", layer = "idn_admbnda_adm2_bps_20200401")
 
 dat_map <- inner_join(data_adopsi, Kabupaten.shp, by = 'ADM2_PCODE')
 dat_map <- st_as_sf(dat_map)
