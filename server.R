@@ -82,17 +82,17 @@ server <- function(input, output, session) {
     req(input$cluster_selection)
     
     filtered_data <- data_filtered()
-    
-    # Mengambil 10 kabupaten dengan Adopsi TIK tertinggi
+
     top25 <- filtered_data %>%
       arrange(Adopsi.TIK) %>%
       head(25)
     
     ggplot(top25, aes(x = reorder(name, Adopsi.TIK), y = Adopsi.TIK, fill = Adopsi.TIK)) +
       geom_bar(stat = "identity") +
+      scale_fill_gradient(low = "#f7f4f9", high = "#6e016b") +  
       coord_flip() +
-      labs(title = "Top 25 Kabupaten dengan Adopsi TIK Tertinggi",
-           x = "Kabupaten",
+      labs(title = "25 Kabupaten/Kota dengan Nilai Adopsi TIK Terendah",
+           x = "Kabupaten/Kota",
            y = "Adopsi TIK") +
       theme_minimal() +
       theme(plot.title = element_text(hjust = 0.5),
@@ -185,19 +185,39 @@ server <- function(input, output, session) {
     if (input$cluster_selection == "all") {
       ui <- fluidRow(
         tags$div(
-          style = "font-family: Verdana; font-size: 11px; font-weight: 200; text-align: justify; padding: 12px; 
-               background-color: #d3d3d3; margin-right: 30px;",
+          style = "font-family: Verdana; font-size: 13px; font-weight: 400; text-align: justify; padding: 16px; 
+            background-color: #f0f0f0; border-radius: 10px; box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
+            margin-right: 24px",
           tags$h3("Pengenalan Smart City"),
           tags$p(
             "Smart City adalah konsep kota yang menggunakan teknologi informasi dan komunikasi (TIK) untuk meningkatkan efisiensi operasional, berbagi informasi dengan publik, dan meningkatkan kualitas layanan pemerintah serta kesejahteraan warga. Berikut adalah enam komponen dasar dari Smart City:"
           ),
           tags$ul(
-            tags$li(tags$b("Smart Mobility:"), " Infrastruktur yang mendukung mobilitas cerdas, termasuk transportasi publik yang efisien dan infrastruktur jalan yang terintegrasi."),
-            tags$li(tags$b("Smart Living:"), " Kapabilitas inovasi yang mendukung kualitas hidup warga, termasuk akses ke layanan kesehatan, pendidikan, dan perumahan yang berkualitas."),
-            tags$li(tags$b("Smart People:"), " Peningkatan keterampilan dan edukasi warga untuk menciptakan masyarakat yang berpengetahuan dan adaptif terhadap perubahan."),
-            tags$li(tags$b("Smart Economy:"), " Ekonomi yang stabil untuk mendorong pertumbuhan ekonomi yang berkelanjutan."),
-            tags$li(tags$b("Smart Environment:"), " Manajemen lingkungan yang efektif, termasuk pengelolaan risiko bencana dan pelestarian sumber daya alam."),
-            tags$li(tags$b("Smart Governance:"), " Pemerintahan yang transparan dan partisipatif, memanfaatkan teknologi untuk meningkatkan keterlibatan warga dalam proses pengambilan keputusan.")
+            style = "list-style-type: none; padding-left: 0;",
+            tags$li(
+              tags$b("Smart Mobility:"), 
+              " Infrastruktur yang mendukung mobilitas cerdas, termasuk transportasi publik yang efisien dan infrastruktur jalan yang terintegrasi."
+            ),
+            tags$li(
+              tags$b("Smart Living:"), 
+              " Kapabilitas inovasi yang mendukung kualitas hidup warga, termasuk akses ke layanan kesehatan, pendidikan, dan perumahan yang berkualitas."
+            ),
+            tags$li(
+              tags$b("Smart People:"), 
+              " Peningkatan keterampilan dan edukasi warga untuk menciptakan masyarakat yang berpengetahuan dan adaptif terhadap perubahan."
+            ),
+            tags$li(
+              tags$b("Smart Economy:"), 
+              " Ekonomi yang stabil untuk mendorong pertumbuhan ekonomi yang berkelanjutan."
+            ),
+            tags$li(
+              tags$b("Smart Environment:"), 
+              " Manajemen lingkungan yang efektif, termasuk pengelolaan risiko bencana dan pelestarian sumber daya alam."
+            ),
+            tags$li(
+              tags$b("Smart Governance:"), 
+              " Pemerintahan yang transparan dan partisipatif, memanfaatkan teknologi untuk meningkatkan keterlibatan warga dalam proses pengambilan keputusan."
+            )
           )
         )
       )
@@ -207,12 +227,12 @@ server <- function(input, output, session) {
       
       # Tambahkan penjelasan fokus pengembangan smart city
       focus_areas <- list(
-        X1 = "Infrastruktur yang mendukung Smart Mobility.",
-        X2 = "Kapabilitas inovasi untuk mendukung Smart Living.",
-        X3 = "Keterampilan untuk mendukung Smart People.",
-        X4 = "Pasar Tenaga Kerja untuk mendukung Smart People",
-        X5 = "Stabilitas Ekonomi Makro untuk mewujudkan Smart Economy.",
-        X6 = "Manajemen risiko bencana yang lebih baik untuk Mewujudkan Smart Environment."
+        X1 = "Peningkatan Infrastruktur yang mendukung Smart Mobility.",
+        X2 = "Peningkatan Kapabilitas Inovasi untuk mendukung Smart Living.",
+        X3 = "Peningkatan Keterampilan untuk mendukung Smart People.",
+        X4 = "Perluasan Pasar Tenaga Kerja untuk mendukung Smart People",
+        X5 = "Peningkatan Stabilitas Ekonomi Makro untuk mewujudkan Smart Economy.",
+        X6 = "Manajemen Risiko Bencana yang lebih baik untuk Mewujudkan Smart Environment."
       )
       
       # Generate HTML for focus areas
@@ -270,32 +290,27 @@ server <- function(input, output, session) {
       
       # Render UI dengan box dan highlight CSS
       ui <- box(
-        title = paste("Hasil Regresi pada Klaster", cluster_id),
+        title = paste("Hasil Regresi untuk Klaster", cluster_id),
         status = "info",
         solidHeader = TRUE,
         width = 12,
         div(
           style = "padding: 10px; border-radius: 5px; background-color: #f0f0f0;",
-          h3("Fokus Pengembangan untuk Smart City"),
+          h3("Fokus pengembangan yang dapat dilakukan untuk mewujudkan Smart City:"),
           tags$ul(
+            style="margin-top: 0; margin-bottom: 10px;  margin-right: 40px; text-align: center;",
             lapply(focus_text, function(text) {
-              tags$li(text)
+              tags$li(
+                style = "background: #c1b7ff; font-size: 15px; padding: 6px; 
+                margin-bottom: 10px; border-radius: 10px; list-style: none;",
+                text
+              )
             })
           )
         )
       )
-      
+    
       return(ui)
     }
   })
-  
-  # Download Data
-  output$download_cluster <- downloadHandler(
-    filename = function() {
-      paste("cluster_data", Sys.Date(), ".csv", sep = "")
-    },
-    content = function(file) {
-      write.csv(st_drop_geometry(dat_map), file)
-    }
-  )
 }
