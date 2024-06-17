@@ -11,7 +11,7 @@ library(viridis)
 library(readxl)
 
 # Set working directory
-setwd("C:/Users/mhafd/OneDrive/Documents/GitHub/EtherealSEC")
+#setwd("C:/Users/mhafd/OneDrive/Documents/GitHub/EtherealSEC")
 
 # Import Data
 data_adopsi <- read.csv("dataSEC - new.csv")
@@ -309,15 +309,18 @@ uji33=function(para){
   t_test_result <- t_test(B, mx, data, n1)
 }
 
+library(shiny)
+library(shinydashboard)
+
 ui <- fluidPage(
   dashboardPage(
     dashboardHeader(
       title = tags$span(
-        tags$img(src = "logo.png", height = "40px", style = "margin-right: 10px;"),
+        tags$img(src = "logo.png", height = "50px", style = "margin-right: 10px;"),
         "Strategy Forge",
-        style = "height: 100%; display: flex; align-items: center; font-size: 20px; font-weight: bold;"
+        style = "height: 100%; display: flex; align-items: center; font-size: 26px; font-weight: bold;"
       ),
-      titleWidth = 250,  # Adjusted to accommodate the logo
+      titleWidth = 300,  # Adjusted to accommodate the logo
       tags$li(class = "dropdown",
               div(
                 style = "margin-top: 10px; margin-right: 15px;",
@@ -334,11 +337,11 @@ ui <- fluidPage(
         tags$style(HTML("
           body {
             font-family: Verdana, serif;
-            background-color: #f0f0f5; /* Warna background */
+            background-color: #f0f0f5;
           }
           .main-header .logo {
             font-family: Georgia, serif;
-            height: 58.77px;
+            height: 70px;
           }
           .sidebar {
             background-color: #4b0082 !important;
@@ -349,16 +352,27 @@ ui <- fluidPage(
             border-radius: 10px; 
           }
           .main-header .logo {
-            background-color: #4b0082 !important; /* Warna background logo header */
+            background-color: #4b0082 !important; 
           }
           .main-header .logo:hover {
-            background-color: #2e0854 !important; /* Warna background logo header saat hover */
+            background-color: #2e0854 !important; 
+          }
+          .logo{
+          width: auto;
           }
           .main-header .navbar {
-            background-color: #6a5acd !important; /* Warna background navbar header */
+            background-color: #6a5acd !important; 
+            height: 70px; 
+          }
+          .main-header .navbar-custom-menu, .main-header .navbar-right {
+            float: right;
+            margin-top: 6px;
+          }
+          .navbar-custom-menu>.navbar-nav>li>.dropdown-menu {
+            margin-top: 20px;
           }
           .content-wrapper, .right-side {
-            background-color: #ffffff; /* Warna background konten utama */
+            background-color: #ffffff;
           }
           .box.box-primary {
             border-top-color: #6a5acd;
@@ -384,7 +398,7 @@ ui <- fluidPage(
             font-family: Verdana;
           }
           .info-box-icon.bg-ungu {
-            background: linear-gradient(to right, #6a5acd, #836FFF); /* Gradient ungu */
+            background: linear-gradient(to right, #6a5acd, #836FFF);
           }
           .alert-info, .bg-aqua, .callout.callout-info, .label-info, .modal-info .modal-body {
             background-color: #9b28b7!important;
@@ -452,6 +466,11 @@ ui <- fluidPage(
             box-shadow: 0 1px 1px rgba(0,0,0,.1);
             border-radius: 2px;
             margin-bottom: 10px;
+            margin-top: 10px;
+          }
+          .row {
+            margin-right: -15px;
+            margin-left: -15px;
             margin-top: 10px;
           }
         "))
