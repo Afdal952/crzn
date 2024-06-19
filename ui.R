@@ -91,6 +91,8 @@ Metpen1 = cluster1_data
 Metpen2 = cluster2_data
 Metpen3 = cluster3_data
 
+cluster_recommendations <- read_excel("Recommendations.xlsx")
+
 t_test <- function(B, mx, data, n1) {
   yhat <- mx %*% B
   residuals <- data[, 1] - yhat
@@ -309,9 +311,6 @@ uji33=function(para){
   t_test_result <- t_test(B, mx, data, n1)
 }
 
-library(shiny)
-library(shinydashboard)
-
 ui <- fluidPage(
   dashboardPage(
     dashboardHeader(
@@ -485,7 +484,8 @@ ui <- fluidPage(
             id = "data_exploration",
             tabPanel("Map", leafletOutput(outputId = "cluster_map")),
             tabPanel("Table", DTOutput(outputId = "cluster_table")),
-            tabPanel("Chart", plotOutput(outputId = "plot_output"))
+            tabPanel("Chart", plotOutput(outputId = "plot_output")),
+            tabPanel("Recommendation Actions", DTOutput(outputId = "recommendations"))
           )
         )
       ),

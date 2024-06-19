@@ -1,91 +1,3 @@
-library(ggplot2)
-library(MASS)
-library(dplyr)
-library(sf)
-library(viridis)
-library(DT)
-library(leaflet)
-library(cluster)
-
-# Set working directory
-#setwd("C:/Users/mhafd/OneDrive/Documents/GitHub/crzn")
-
-# Import Data
-data_adopsi <- read.csv("dataSEC - new.csv")
-colnames(data_adopsi)[colnames(data_adopsi) == 'ID'] <- 'ADM2_PCODE'
-
-Kabupaten.shp <- read_sf(dsn = "File SHP Indonesia", layer = "idn_admbnda_adm2_bps_20200401")
-
-dat_map <- inner_join(data_adopsi, Kabupaten.shp, by = 'ADM2_PCODE')
-dat_map <- st_as_sf(dat_map)
-
-# Ensure selected columns are numeric
-data_adopsi <- data_adopsi %>%
-  mutate(
-    Adopsi.TIK = as.numeric(Adopsi.TIK),
-    Infrastruktur = as.numeric(Infrastruktur),
-    Kapabilitas.Inovasi = as.numeric(`Kapabilitas.Inovasi`),
-    Keterampilan = as.numeric(Keterampilan),
-    Pasar.Tenaga.Kerja = as.numeric(`Pasar.Tenaga.Kerja`),
-    Stabilitas.Ekonomi = as.numeric(`Stabilitas.Ekonomi`),
-    IRBI = as.numeric(`IRBI`)
-  )
-
-# Run K-Means
-clustering_data <- data_adopsi[, c("Adopsi.TIK","Infrastruktur", "Kapabilitas.Inovasi", "Keterampilan", "Pasar.Tenaga.Kerja", "Stabilitas.Ekonomi", "IRBI")]
-
-# Select variables for clustering
-cluster_vars <- data_adopsi[, c("Infrastruktur", "Kapabilitas.Inovasi", "Keterampilan", "Pasar.Tenaga.Kerja", "Stabilitas.Ekonomi", "IRBI")]
-
-# Run K-Means
-set.seed(20)
-kmeans_result <- kmeans(cluster_vars, centers = 3, nstart = 25)
-
-# Menambahkan Hasil Klaster ke Data
-clustering_data$cluster <- as.factor(kmeans_result$cluster)
-
-# Menambahkan variabel Adopsi.TIK yang sebelumnya dihapus
-clustering_data <- data_adopsi %>%
-  dplyr::select(-Adopsi.TIK) %>%
-  na.omit() %>%
-  mutate(cluster = as.factor(kmeans_result$cluster)) %>%
-  bind_cols(data_adopsi %>% dplyr::select(Adopsi.TIK))
-
-# Memastikan semua kolom selain 'cluster' adalah numerik
-numeric_cols <- clustering_data %>%
-  dplyr::select(-cluster) %>%
-  select_if(is.numeric) %>%
-  colnames()
-
-#CLUSTERWISE REGRESSION
-# Filter data untuk setiap klaster
-cluster1_data <- clustering_data %>% filter(cluster == 1)
-cluster2_data <- clustering_data %>% filter(cluster == 2)
-cluster3_data <- clustering_data %>% filter(cluster == 3)
-
-cluster1_data = cluster1_data[, c("Adopsi.TIK","Infrastruktur", "Kapabilitas.Inovasi",
-                                  "Keterampilan", "Pasar.Tenaga.Kerja", "Stabilitas.Ekonomi", "IRBI")]
-cluster2_data = cluster2_data[, c("Adopsi.TIK","Infrastruktur", "Kapabilitas.Inovasi",
-                                  "Keterampilan", "Pasar.Tenaga.Kerja", "Stabilitas.Ekonomi", "IRBI")]
-cluster3_data = cluster3_data[, c("Adopsi.TIK","Infrastruktur", "Kapabilitas.Inovasi",
-                                  "Keterampilan", "Pasar.Tenaga.Kerja", "Stabilitas.Ekonomi", "IRBI")]
-Metpen1 = cluster1_data
-Metpen2 = cluster2_data
-Metpen3 = cluster3_data
-
-# Run K-Means
-clustering_data <- data_adopsi %>%
-  dplyr::select(-Adopsi.TIK) %>%
-  na.omit()
-
-# Select variables for clustering
-cluster_vars <- clustering_data[, c("Infrastruktur", "Kapabilitas.Inovasi", "Keterampilan", "Pasar.Tenaga.Kerja", "Stabilitas.Ekonomi", "IRBI")]
-
-# Run K-Means
-set.seed(20)
-kmeans_result <- kmeans(cluster_vars, centers = 3)  # Misal, 3 klaster
-dat_map$cluster <- factor(kmeans_result$cluster)
-
 server <- function(input, output, session) {
   
   # Filtered Data
@@ -105,7 +17,6 @@ server <- function(input, output, session) {
   # Run K-Means
   clustering_data <- data_adopsi[, c("Adopsi.TIK","Infrastruktur", "Kapabilitas.Inovasi", "Keterampilan", "Pasar.Tenaga.Kerja", "Stabilitas.Ekonomi", "IRBI")]
   
-  # Menambahkan variabel Adopsi.TIK yang sebelumnya dihapus
   clustering_data <- data_adopsi %>%
     dplyr::select(-Adopsi.TIK) %>%
     na.omit() %>%
@@ -170,7 +81,7 @@ server <- function(input, output, session) {
     req(input$cluster_selection)
     
     filtered_data <- data_filtered()
-
+    
     top25 <- filtered_data %>%
       arrange(Adopsi.TIK) %>%
       head(25)
@@ -199,16 +110,10 @@ server <- function(input, output, session) {
       cluster_data <- data_filtered()[data_filtered()$cluster == cluster_id, ]
     }
     
-    # Select numeric variables except Adopsi.TIK and geometry
     numeric_vars <- c("Infrastruktur", "Kapabilitas.Inovasi", "Keterampilan", "Pasar.Tenaga.Kerja", "Stabilitas.Ekonomi", "IRBI")
-    
-    # Calculate mean of selected variables for the selected cluster
     cluster_means <- sapply(cluster_data[, numeric_vars], mean, na.rm = TRUE)
-    
-    # Add Adopsi.TIK to the cluster_means
     cluster_means <- c(cluster_means, Adopsi.TIK = mean(cluster_data$Adopsi.TIK, na.rm = TRUE))
     
-    # Create scorecard UI using infoBox
     fluidRow(
       column(
         width = 4,
@@ -313,7 +218,6 @@ server <- function(input, output, session) {
       cluster_id <- as.integer(substring(input$cluster_selection, 9))
       cluster_data <- data_filtered()[data_filtered()$cluster == cluster_id, ]
       
-      # Tambahkan penjelasan fokus pengembangan smart city
       focus_areas <- list(
         X1 = "Peningkatan Infrastruktur yang mendukung Smart Mobility.",
         X2 = "Peningkatan Kapabilitas Inovasi untuk mendukung Smart Living.",
@@ -323,7 +227,6 @@ server <- function(input, output, session) {
         X6 = "Manajemen Risiko Bencana yang lebih baik untuk Mewujudkan Smart Environment."
       )
       
-      # Generate HTML for focus areas
       significant_variables <- character()
       if (cluster_id == 1) {
         splinecluster1 <- uji12(0)
@@ -331,7 +234,6 @@ server <- function(input, output, session) {
         ujiT <- splinecluster1$P_Value
         
         for (i in seq_along(coefficients)) {
-          # Skip first row (intercept), then process every 3 rows
           if (i %% 3 != 1 && ujiT[i] <= 0.05) {
             variable_index <- ceiling((i - 1) / 3)
             
@@ -346,7 +248,6 @@ server <- function(input, output, session) {
         ujiT <- splinecluster2$P_Value
         
         for (i in seq_along(coefficients)) {
-          # Skip first row (intercept), then process every 4 rows
           if (i %% 4 != 1 && ujiT[i] <= 0.05) {
             variable_index <- ceiling((i - 1) / 4)
             
@@ -361,7 +262,6 @@ server <- function(input, output, session) {
         ujiT <- splinecluster3$P_Value
         
         for (i in seq_along(coefficients)) {
-          # Skip first row (intercept), then process every 4 rows
           if (i %% 4 != 1 && ujiT[i] <= 0.05) {
             variable_index <- ceiling((i - 1) / 4)
             
@@ -376,7 +276,6 @@ server <- function(input, output, session) {
         focus_areas[[var]]
       })
       
-      # Render UI dengan box dan highlight CSS
       ui <- box(
         title = paste("Hasil Regresi untuk Klaster", cluster_id),
         status = "info",
@@ -397,8 +296,22 @@ server <- function(input, output, session) {
           )
         )
       )
-    
+      
       return(ui)
     }
+  })
+  
+  # Render Recommendation Actions Table
+  output$recommendations <- renderDT({
+    req(input$cluster_selection)
+    
+    if (input$cluster_selection == "all") {
+      recommendation_data <- cluster_recommendations
+    } else {
+      cluster_id <- as.integer(substring(input$cluster_selection, 9))
+      recommendation_data <- cluster_recommendations[cluster_recommendations$cluster == cluster_id, ]
+    }
+    
+    datatable(recommendation_data, options = list(pageLength = 10))
   })
 }
